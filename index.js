@@ -88,7 +88,7 @@ function eventHandler(req, res) {
 
 function getEvent(query) {
     const url = `http://api.eventful.com/json/events/search?app_key=${process.env.EVENT_API_KEY}&location=${query.formatted_query}`;
-    console.log('url', url);
+    console.log('naseem', url);
     return superagent.get(url)
         .then(data => {
             const eventData = JSON.parse(data.text);
