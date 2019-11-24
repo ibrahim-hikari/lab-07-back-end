@@ -15,10 +15,15 @@ server.get('/', (request, response) => {
     response.status(200).send('Hello everyone')
 })
 
+
+
 server.get('/location', locationHandler);
 server.get('/weather', weatherHandler);
-server.get('/event', eventHandler);
+server.get('/events', eventHandler);
 
+
+
+// ---- Location section ---- \\
 
 function locationHandler(req, res) {
     getLocation(req.query.data)
@@ -30,7 +35,7 @@ function getLocation(city) {
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${city}&key=${process.env.GEOCODE_API_KEY}`
     console.log('url', url);
-    
+
     return superagent.get(url)
         .then(data => {
             return new Location(city, data.body);
@@ -58,7 +63,7 @@ function weatherHandler(req, res) {
 
 function getWeather(query) {
     const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${query.latitude},${query.longitude}`;
-    console.log('url',url);
+    console.log('url', url);
     return superagent.get(url)
         .then(data => {
             let weather = data.body;
@@ -76,7 +81,6 @@ function Weather(day) {
 // ---- Event section ---- \\
 
 function eventHandler(req, res) {
-    // Query String = ?a=b&c=d
     getEvent(req.query.data)
         .then(eventData => res.status(200).json(eventData));
 
@@ -84,22 +88,24 @@ function eventHandler(req, res) {
 
 function getEvent(query) {
     const url = `http://api.eventful.com/json/events/search?app_key=${process.env.EVENT_API_KEY}&location=${query.formatted_query}`;
-    console.log('url',url);
+    console.log('url', url);
     return superagent.get(url)
         .then(data => {
-            console.log('data', data);
-            
-            let event = data.body;
-            return event.daily.data.map((day) => {
-                return new Event(day);
+            const eventData = JSON.parse(data.text);
+            return eventData.events.event.map((eventday) => {
+                return new Event(eventday);
             });
         });
 }
 
 function Event(day) {
-    this.forecast = day.summary;
-    this.time = new Date(day.time * 1000).toDateString();
+    this.link = day.url;
+    this.name = day.title;
+    this.event_data = day.start_time;
+    this.summary = day.description;
 }
+
+
 
 
 server.get('/foo', (request, response) => {
